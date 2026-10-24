@@ -28,7 +28,7 @@ export default function TabLayout() {
           options={{
             title,
             tabBarButtonTestID: `tab-${name}`,
-            tabBarIcon: ({ color, size }) => <Feather name={icon} size={size} color={color} />,
+            tabBarIcon: ({ color, size }) => <Feather name={icon} size={size} color={color as string} />,
           }}
         />
       ))}
