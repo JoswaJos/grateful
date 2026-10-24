@@ -1,13 +1,6 @@
-import { Text } from "react-native";
+import { Redirect } from "expo-router";
 
-import { Screen } from "@/components/screen";
-
-// Placeholder: auth comes later.
+// Verification now happens inside sign-up.tsx. Kept so old links still work.
 export default function VerifyScreen() {
-  return (
-    <Screen className="justify-center">
-      <Text className="text-3xl font-bold text-ink">Verify your email</Text>
-      <Text className="mt-2 text-base text-muted">Coming soon.</Text>
-    </Screen>
-  );
+  return <Redirect href="/sign-up" />;
 }

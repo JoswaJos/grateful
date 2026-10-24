@@ -1,6 +1,8 @@
+import { useAuth } from "@clerk/clerk-expo";
 import Feather from "@expo/vector-icons/Feather";
-import { Tabs } from "expo-router";
+import { Redirect, Tabs } from "expo-router";
 import type { ComponentProps } from "react";
+import { ActivityIndicator, View } from "react-native";
 
 type FeatherName = ComponentProps<typeof Feather>["name"];
 
@@ -12,6 +14,20 @@ const TABS: { name: string; title: string; icon: FeatherName }[] = [
 ];
 
 export default function TabLayout() {
+  const { isLoaded, isSignedIn } = useAuth();
+
+  // Wait until Clerk knows whether the user is signed in.
+  if (!isLoaded) {
+    return (
+      <View className="flex-1 items-center justify-center bg-cream">
+        <ActivityIndicator color="#F4845F" />
+      </View>
+    );
+  }
+
+  // Guard: signed-out users go to sign-in.
+  if (!isSignedIn) return <Redirect href="/sign-in" />;
+
   return (
     <Tabs
       screenOptions={{
