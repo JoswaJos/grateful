@@ -4,6 +4,8 @@ import { Redirect, Tabs } from "expo-router";
 import type { ComponentProps } from "react";
 import { ActivityIndicator, View } from "react-native";
 
+import { useUserSync } from "@/hooks/useUserSync";
+
 type FeatherName = ComponentProps<typeof Feather>["name"];
 
 const TABS: { name: string; title: string; icon: FeatherName }[] = [
@@ -15,6 +17,8 @@ const TABS: { name: string; title: string; icon: FeatherName }[] = [
 
 export default function TabLayout() {
   const { isLoaded, isSignedIn } = useAuth();
+  // Make sure the Supabase users row exists before any entries are saved.
+  useUserSync();
 
   // Wait until Clerk knows whether the user is signed in.
   if (!isLoaded) {
