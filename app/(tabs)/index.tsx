@@ -1,98 +1,53 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { useState } from "react";
+import { Alert, Pressable, ScrollView, Text, TextInput } from "react-native";
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import { Screen } from "@/components/screen";
 
-export default function HomeScreen() {
+const PROMPTS = ["I'm grateful for…", "Something that made me smile…", "Someone I appreciate…"];
+
+export default function TodayScreen() {
+  const [entries, setEntries] = useState(["", "", ""]);
+
+  const updateEntry = (index: number, text: string) =>
+    setEntries((prev) => prev.map((value, i) => (i === index ? text : value)));
+
+  const handleSave = () => {
+    if (entries.every((e) => !e.trim())) {
+      Alert.alert("Nothing to save", "Write at least one thing you're grateful for.");
+      return;
+    }
+    Alert.alert("Saved", "Your gratitude entry has been saved.");
+    setEntries(["", "", ""]);
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Hello Josua</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+    <Screen>
+      <ScrollView keyboardShouldPersistTaps="handled" contentContainerClassName="pb-10">
+        <Text className="mt-4 text-3xl font-bold text-ink">Today</Text>
+        <Text className="mb-6 mt-1 text-base text-muted">Three good things.</Text>
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+        {entries.map((value, i) => (
+          <TextInput
+            key={i}
+            testID={`gratitude-input-${i + 1}`}
+            className="mb-4 min-h-24 rounded-2xl bg-surface p-4 text-base text-ink"
+            placeholder={PROMPTS[i]}
+            placeholderTextColor="#8A8580"
+            multiline
+            textAlignVertical="top"
+            value={value}
+            onChangeText={(text) => updateEntry(i, text)}
+          />
+        ))}
+
+        <Pressable
+          testID="save-button"
+          onPress={handleSave}
+          className="mt-2 items-center rounded-2xl bg-accent py-4 active:opacity-80"
+        >
+          <Text className="text-base font-semibold text-surface">Save</Text>
+        </Pressable>
+      </ScrollView>
+    </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
