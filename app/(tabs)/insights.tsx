@@ -1,8 +1,13 @@
 import { useMemo } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { format, parseISO } from "date-fns";
+import { ActivityIndicator, ScrollView, Text, View } from "react-native";
+
+import { PrimaryButton } from "@/components/primary-button";
 
 import { Screen } from "@/components/screen";
 import { useEntriesQuery } from "@/hooks/useEntries";
+import { useGenerateInsights } from "@/hooks/useGenerateInsights";
+import { useInsightsQuery } from "@/hooks/useInsights";
 import { useStreak } from "@/hooks/useStreak";
 import { todayInIST } from "@/lib/date";
 import { MOOD_META } from "@/lib/moods";
@@ -11,6 +16,8 @@ import { MOODS } from "@/lib/schemas/entry";
 export default function InsightsScreen() {
   const { data: entries = [] } = useEntriesQuery();
   const streak = useStreak();
+  const { data: insight, isLoading: insightLoading } = useInsightsQuery();
+  const generate = useGenerateInsights();
 
   // Mood counts for the current month (YYYY-MM prefix match).
   const month = todayInIST().slice(0, 7);
@@ -46,9 +53,38 @@ export default function InsightsScreen() {
           ))}
         </View>
 
-        <View className="mt-8 rounded-2xl border border-dashed border-accent p-5">
-          <Text className="text-lg font-semibold text-ink">✨ AI insights</Text>
-          <Text className="mt-1 text-muted">Weekly themes from your entries are coming soon.</Text>
+        <Text className="mb-3 mt-8 text-lg font-semibold text-ink">✨ Weekly AI insight</Text>
+        <View testID="ai-card" className="rounded-2xl bg-surface p-5">
+          {insightLoading || generate.isPending ? (
+            <View className="items-center py-6">
+              <ActivityIndicator color="#F4845F" />
+              <Text className="mt-2 text-muted">{generate.isPending ? "Reading your week…" : "Loading…"}</Text>
+            </View>
+          ) : insight ? (
+            <>
+              <Text className="text-xs text-muted">Week of {format(parseISO(insight.week_start), "d MMM yyyy")}</Text>
+              <View className="mt-3 flex-row flex-wrap gap-2">
+                {(insight.themes ?? []).map((t) => (
+                  <View key={t} className="rounded-full bg-cream px-3 py-1">
+                    <Text testID="ai-theme" className="text-sm font-medium text-accent">{t}</Text>
+                  </View>
+                ))}
+              </View>
+              <Text testID="ai-summary" className="mt-4 text-base leading-6 text-ink">{insight.summary}</Text>
+              {insight.encouragement ? <Text className="mt-3 italic text-muted">{insight.encouragement}</Text> : null}
+            </>
+          ) : (
+            <Text className="text-muted">Get themes and a summary of what you've been grateful for this week.</Text>
+          )}
+
+          {generate.error ? <Text testID="ai-error" className="mt-3 text-red-500">{(generate.error as Error).message}</Text> : null}
+
+          <PrimaryButton
+            testID="generate-insight-button"
+            title={insight ? "Refresh this week's insight" : "Generate my weekly insight"}
+            loading={generate.isPending}
+            onPress={() => generate.mutate()}
+          />
         </View>
       </ScrollView>
     </Screen>
